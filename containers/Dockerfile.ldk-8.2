@@ -1,0 +1,38 @@
+FROM sail-8.2/app:latest
+
+ENV LD_LIBRARY_PATH /opt/oracle/instantclient_21_11
+
+RUN apt-get update \
+    && apt-get install -y libaio1 php-pear \
+    # Useful troubleshooting tools
+    && apt-get install -y iproute2 net-tools \
+    # Install runkit
+    && pecl channel-update pecl.php.net \
+    && pecl install channel://pecl.php.net/runkit7-4.0.0a6 \
+    && echo "extension=runkit7.so" > /etc/php/8.2/mods-available/runkit7.ini \
+    && phpenmod runkit7 \
+    # Download and Install oracle packages (Basic Package, SQL*Plus Package, Tools Package, and SDK Package)
+    && mkdir -p /opt/oracle \
+    && curl -o /opt/oracle/instantclient-basic-linux.x64-21.11.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/2111000/instantclient-basic-linux.x64-21.11.0.0.0dbru.zip \
+    && curl -o /opt/oracle/instantclient-sqlplus-linux.x64-21.11.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/2111000/instantclient-sqlplus-linux.x64-21.11.0.0.0dbru.zip \
+    && curl -o /opt/oracle/instantclient-sdk-linux.x64-21.11.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/2111000/instantclient-sdk-linux.x64-21.11.0.0.0dbru.zip \
+    && curl -o /opt/oracle/instantclient-tools-linux.x64-21.11.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/2111000/instantclient-tools-linux.x64-21.11.0.0.0dbru.zip \
+    && unzip /opt/oracle/instantclient-basic-linux.x64-21.11.0.0.0dbru.zip -d /opt/oracle \
+    && unzip /opt/oracle/instantclient-sqlplus-linux.x64-21.11.0.0.0dbru.zip -d /opt/oracle \
+    && unzip /opt/oracle/instantclient-sdk-linux.x64-21.11.0.0.0dbru.zip -d /opt/oracle \
+    && unzip /opt/oracle//instantclient-tools-linux.x64-21.11.0.0.0dbru.zip -d /opt/oracle \
+    && rm /opt/oracle/instantclient-basic-linux.x64-21.11.0.0.0dbru.zip \
+    && rm /opt/oracle/instantclient-sqlplus-linux.x64-21.11.0.0.0dbru.zip \
+    && rm /opt/oracle/instantclient-sdk-linux.x64-21.11.0.0.0dbru.zip \
+    && rm /opt/oracle/instantclient-tools-linux.x64-21.11.0.0.0dbru.zip \
+    && echo "/opt/oracle/instantclient_21_11" > /etc/ld.so.conf.d/oracle-instantclient.conf \
+    && ldconfig \
+    # Install OCI8
+    && echo "instantclient,/opt/oracle/instantclient_21_11" | pecl install channel://pecl.php.net/oci8 \
+    && echo "extension=oci8.so" > /etc/php/8.2/mods-available/oci8.ini \ 
+    && phpenmod oci8 \
+    # Cleanup
+    && apt-get -y autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
