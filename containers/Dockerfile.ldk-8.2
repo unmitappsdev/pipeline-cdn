@@ -27,6 +27,8 @@ RUN apt-get update \
     && rm /opt/oracle/instantclient-tools-linux.x64-21.11.0.0.0dbru.zip \
     && echo "/opt/oracle/instantclient_21_11" > /etc/ld.so.conf.d/oracle-instantclient.conf \
     && ldconfig \
+    && echo "PATH=/opt/oracle/instantclient_21_11:\$PATH" >> ~/.bashrc \
+    && echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_11:\$LD_LIBRARY_PATH" >> ~/.bashrc \
     # Install OCI8
     && echo "instantclient,/opt/oracle/instantclient_21_11" | pecl install channel://pecl.php.net/oci8 \
     && echo "extension=oci8.so" > /etc/php/8.2/mods-available/oci8.ini \ 
